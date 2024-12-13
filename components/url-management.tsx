@@ -8,6 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { UrlItem } from '../types/url-item'
+import { useToast } from "@/components/ui/use-toast"
 
 export default function UrlManagement() {
     const [urls, setUrls] = useState<UrlItem[]>([])
@@ -16,6 +17,7 @@ export default function UrlManagement() {
     const [isDialogOpen, setIsDialogOpen] = useState(false)
     const [searchTerm, setSearchTerm] = useState('')
     const [currentSearchTerm, setCurrentSearchTerm] = useState('')
+    const { toast } = useToast()
 
     const fetchUrls = async (clearSearch: boolean = false) => {
         try {
@@ -37,10 +39,35 @@ export default function UrlManagement() {
 
     const handleCommentChange = async (id: string, isCommented: boolean) => {
         try {
-            await fetch('/api/comment-url', {
+            const response = await fetch('/api/comment-url', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ id, isCommented }),
+            })
+
+            if (!response.ok) {
+                toast({
+                    title: 'update failed',
+                    description: 'update failed',
+                    variant: 'destructive',
+                })
+                return
+            }
+
+            const data = await response.json()
+
+            if (data.code !== 0) {
+                toast({
+                    title: 'update failed',
+                    description: 'update failed',
+                    variant: 'destructive',
+                })
+                return
+            }
+            console.log('handleCommentChange successfully:')
+            toast({
+                title: "Success",
+                description: "handleCommentChange successfully",
             })
             fetchUrls()
         } catch (error) {
@@ -99,6 +126,8 @@ export default function UrlManagement() {
                                         value={newUrl}
                                         onChange={(e) => setNewUrl(e.target.value)}
                                         className="col-span-3"
+                                        placeholder="https://live.douyin.com/853033329"
+                                        required
                                     />
                                 </div>
                                 <div className="grid grid-cols-4 items-center gap-4">

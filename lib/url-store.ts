@@ -2,9 +2,43 @@ import fs from 'fs';
 import path from 'path';
 import { UrlItem } from '../types/url-item';
 
-const configFilePath = path.resolve(process.cwd(), 'config.txt');
+const fileExists = (filePath: string): boolean => {
+    try {
+        return fs.statSync(filePath).isFile();
+    } catch (err) {
+        return false;
+    }
+}
+
+const CONFIG_FILE_NAME = 'config.ini';
+
+// 使用 IIFE 初始化 configFilePath
+const configFilePath: string = (() => {
+    let filePath: string | undefined;
+
+    // 检查 /app 目录下的 config.ini 是否存在
+    const appConfigPath = path.join('/app', CONFIG_FILE_NAME);
+    if (fileExists(appConfigPath)) {
+        filePath = appConfigPath;
+        console.log(`Found config file at: ${filePath}`); // 输出找到的文件路径
+    } else {
+        // 检查当前工作目录下的 config.ini 是否存在
+        const cwdConfigPath = path.resolve(process.cwd(), CONFIG_FILE_NAME);
+        if (fileExists(cwdConfigPath)) {
+            filePath = cwdConfigPath;
+            console.log(`Found config file at: ${filePath}`); // 输出找到的文件路径
+        } else {
+            throw new Error('Neither /app nor the current working directory contains a "config.ini" file.');
+        }
+    }
+
+    return filePath!;
+})();
 
 const readConfigFile = (): string[] => {
+    if (!configFilePath) {
+        throw new Error('Configuration file path is not set.');
+    }
     try {
         const data = fs.readFileSync(configFilePath, 'utf-8');
         return data.trim().split('\n');
@@ -29,6 +63,9 @@ const parseConfig = (configLines: string[]): UrlItem[] => {
 };
 
 const saveConfigFile = (configLines: string[]) => {
+    if (!configFilePath) {
+        throw new Error('Configuration file path is not set.');
+    }
     fs.writeFileSync(configFilePath, configLines.join('\n'), 'utf-8');
 };
 

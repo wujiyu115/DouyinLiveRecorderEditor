@@ -5,7 +5,7 @@ export async function POST(request: Request) {
     try {
         const { url, description } = await request.json()
 
-        if (!url || !description) {
+        if (!url) {
             return NextResponse.json({ error: 'URL and description are required' }, { status: 400 })
         }
 
