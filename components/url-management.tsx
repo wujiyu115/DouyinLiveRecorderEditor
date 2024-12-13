@@ -15,12 +15,17 @@ export default function UrlManagement() {
     const [newDescription, setNewDescription] = useState('')
     const [isDialogOpen, setIsDialogOpen] = useState(false)
     const [searchTerm, setSearchTerm] = useState('')
+    const [currentSearchTerm, setCurrentSearchTerm] = useState('')
 
-    const fetchUrls = async () => {
+    const fetchUrls = async (clearSearch: boolean = false) => {
         try {
-            const response = await fetch(`/api/get-urls?search=${searchTerm}`)
+            const response = await fetch(`/api/get-urls?search=${currentSearchTerm}`)
             const data = await response.json()
             setUrls(data)
+            if (clearSearch) {
+                setSearchTerm('')
+                setCurrentSearchTerm('')
+            }
         } catch (error) {
             console.error('Failed to fetch URLs:', error)
         }
@@ -28,7 +33,7 @@ export default function UrlManagement() {
 
     useEffect(() => {
         fetchUrls()
-    }, [searchTerm])
+    }, [currentSearchTerm])
 
     const handleCommentChange = async (id: string, isCommented: boolean) => {
         try {
@@ -59,15 +64,22 @@ export default function UrlManagement() {
         }
     }
 
+    const handleSearch = () => {
+        setCurrentSearchTerm(searchTerm)
+    }
+
     return (
         <div className="container mx-auto p-4">
             <div className="flex justify-between items-center mb-4">
-                <Input
-                    placeholder="搜索 URL 或描述"
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="max-w-sm"
-                />
+                <div className="flex space-x-2">
+                    <Input
+                        placeholder="搜索 URL 或描述"
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="max-w-sm"
+                    />
+                    <Button onClick={handleSearch}>搜索</Button>
+                </div>
                 <div className="space-x-2">
                     <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
                         <DialogTrigger asChild>
@@ -104,7 +116,7 @@ export default function UrlManagement() {
                             <Button onClick={handleAddUrl}>确定</Button>
                         </DialogContent>
                     </Dialog>
-                    <Button onClick={fetchUrls}>刷新</Button>
+                    <Button onClick={() => fetchUrls(true)}>刷新</Button>
                 </div>
             </div>
             <Table>
