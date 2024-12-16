@@ -95,6 +95,12 @@ export default function UrlManagement() {
         setCurrentSearchTerm(searchTerm)
     }
 
+    const handleKeyPress = (event: React.KeyboardEvent<HTMLInputElement>) => {
+        if (event.key === 'Enter') {
+            handleSearch();
+        }
+    };
+
     return (
         <div className="container mx-auto p-4">
             <div className="flex justify-between items-center mb-4">
@@ -103,6 +109,7 @@ export default function UrlManagement() {
                         placeholder="搜索 URL 或描述"
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
+                        onKeyUp={handleKeyPress}
                         className="max-w-sm"
                     />
                     <Button onClick={handleSearch}>搜索</Button>
