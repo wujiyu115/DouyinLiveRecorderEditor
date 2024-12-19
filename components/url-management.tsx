@@ -8,6 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { UrlItem } from '../types/url-item'
+import { Recording } from '../types/recording'
 import { useToast } from "@/components/ui/use-toast"
 
 export default function UrlManagement() {
@@ -17,6 +18,8 @@ export default function UrlManagement() {
     const [isDialogOpen, setIsDialogOpen] = useState(false)
     const [searchTerm, setSearchTerm] = useState('')
     const [currentSearchTerm, setCurrentSearchTerm] = useState('')
+    const [recordings, setRecordings] = useState<Recording[]>([])
+
     const { toast } = useToast()
 
     const fetchUrls = async (clearSearch: boolean = false) => {
@@ -33,8 +36,22 @@ export default function UrlManagement() {
         }
     }
 
+    const fetchRecordings = async () => {
+        try {
+            const response = await fetch('/api/fetch-recordings')
+            const data = await response.json()
+            setRecordings(data.recordings || [])
+        } catch (error) {
+            console.error('Failed to fetch recordings:', error)
+        }
+    }
+
     useEffect(() => {
         fetchUrls()
+        fetchRecordings()
+
+        const interval = setInterval(fetchRecordings, 5000)
+        return () => clearInterval(interval)
     }, [currentSearchTerm])
 
     const handleCommentChange = async (id: string, isCommented: boolean) => {
@@ -64,10 +81,10 @@ export default function UrlManagement() {
                 })
                 return
             }
-            console.log('handleCommentChange successfully:')
+            console.log('comment successfully:')
             toast({
                 title: "Success",
-                description: "handleCommentChange successfully",
+                description: "comment successfully",
             })
             fetchUrls()
         } catch (error) {
@@ -81,6 +98,10 @@ export default function UrlManagement() {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ url: newUrl, description: newDescription }),
+            })
+            toast({
+                title: "Success",
+                description: "add-url successfully",
             })
             setNewUrl('')
             setNewDescription('')
@@ -155,29 +176,53 @@ export default function UrlManagement() {
                     <Button onClick={() => fetchUrls(true)}>刷新</Button>
                 </div>
             </div>
-            <Table>
-                <TableHeader>
-                    <TableRow>
-                        <TableHead className="w-[100px]">是否注释</TableHead>
-                        <TableHead>URL 地址</TableHead>
-                        <TableHead>URL 描述</TableHead>
-                    </TableRow>
-                </TableHeader>
-                <TableBody>
-                    {urls.map((item) => (
-                        <TableRow key={item.id}>
-                            <TableCell>
-                                <Checkbox
-                                    checked={item.isCommented}
-                                    onCheckedChange={(checked) => handleCommentChange(item.id, checked as boolean)}
-                                />
-                            </TableCell>
-                            <TableCell>{item.url}</TableCell>
-                            <TableCell>{item.description}</TableCell>
+            <div className="mt-8">
+                <h2 className="text-2xl font-bold mb-4">正在录制列表</h2>
+                <Table>
+                    <TableHeader>
+                        <TableRow>
+                            <TableHead>直播间</TableHead>
+                            <TableHead>画质</TableHead>
+                            <TableHead>时长</TableHead>
                         </TableRow>
-                    ))}
-                </TableBody>
-            </Table>
+                    </TableHeader>
+                    <TableBody>
+                        {recordings.map((recording, index) => (
+                            <TableRow key={index}>
+                                <TableCell>{recording.stream}</TableCell>
+                                <TableCell>{recording.quality_attribute}</TableCell>
+                                <TableCell>{recording.duration}</TableCell>
+                            </TableRow>
+                        ))}
+                    </TableBody>
+                </Table>
+            </div>
+            <div className="mt-8">
+                <h2 className="text-2xl font-bold mb-4">直播列表</h2>
+                <Table>
+                    <TableHeader>
+                        <TableRow>
+                            <TableHead className="w-[100px]">是否注释</TableHead>
+                            <TableHead>URL 地址</TableHead>
+                            <TableHead>URL 描述</TableHead>
+                        </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                        {urls.map((item) => (
+                            <TableRow key={item.id}>
+                                <TableCell>
+                                    <Checkbox
+                                        checked={item.isCommented}
+                                        onCheckedChange={(checked) => handleCommentChange(item.id, checked as boolean)}
+                                    />
+                                </TableCell>
+                                <TableCell>{item.url}</TableCell>
+                                <TableCell>{item.description}</TableCell>
+                            </TableRow>
+                        ))}
+                    </TableBody>
+                </Table>
+            </div>
         </div>
     )
 }
