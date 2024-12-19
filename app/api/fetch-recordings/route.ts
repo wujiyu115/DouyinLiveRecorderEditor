@@ -21,8 +21,13 @@ export async function GET(): Promise<Response> {
             setTimeout(() => reject(new Error('Request timed out')), timeoutMs)
         );
 
-        // Fetch data from the URL
-        const fetchPromise = fetch(url);
+        // 发起网络请求，禁用缓存
+        const fetchPromise = fetch(url, {
+            headers: {
+                'Cache-Control': 'no-cache',
+                'Pragma': 'no-cache'
+            }
+        });
 
         // 使用 Promise.race 来竞赛 fetch 和 timeout
         const response: Response | Error = await Promise.race([fetchPromise, timeoutPromise]) as Response | Error;
@@ -39,6 +44,7 @@ export async function GET(): Promise<Response> {
 
         // 将响应转换为 JSON 格式的数据
         const data = await response.json();
+        // console.log(url, data);
 
         // 返回成功响应
         return createSuccessResponse(data);
