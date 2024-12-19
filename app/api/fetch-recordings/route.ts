@@ -20,9 +20,10 @@ export async function GET(): Promise<Response> {
         const timeoutPromise = new Promise<never>((_, reject) =>
             setTimeout(() => reject(new Error('Request timed out')), timeoutMs)
         );
-
+        // 添加时间戳参数以避免缓存
+        const timestampedUrl = `${url}?_t=${Date.now()}`;
         // 发起网络请求，禁用缓存
-        const fetchPromise = fetch(url, {
+        const fetchPromise = fetch(timestampedUrl, {
             headers: {
                 'Cache-Control': 'no-cache',
                 'Pragma': 'no-cache'
