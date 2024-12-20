@@ -111,3 +111,16 @@ export function deleteUrl(id: string): boolean {
     return false;
 }
 
+export function modifyUrl(id: string, newUrl: string, newDescription: string): UrlItem | undefined {
+    const configLines = readConfigFile();
+    const index = parseInt(id) - 1;
+
+    if (index >= 0 && index < configLines.length) {
+        const newEntry = newDescription ? `${newUrl}, ${newDescription}` : newUrl;
+        configLines[index] = newEntry;
+        saveConfigFile(configLines);
+        return parseConfig(configLines)[index];
+    }
+
+    return undefined;
+}

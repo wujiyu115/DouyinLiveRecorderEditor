@@ -16,6 +16,8 @@ export default function UrlManagement() {
     const [newUrl, setNewUrl] = useState('')
     const [newDescription, setNewDescription] = useState('')
     const [isDialogOpen, setIsDialogOpen] = useState(false)
+    const [isModifyDialogOpen, setIsModifyDialogOpen] = useState(false)
+    const [modifyingUrl, setModifyingUrl] = useState<UrlItem | null>(null)
     const [searchTerm, setSearchTerm] = useState('')
     const [currentSearchTerm, setCurrentSearchTerm] = useState('')
     const [recordings, setRecordings] = useState<Recording[]>([])
@@ -112,6 +114,58 @@ export default function UrlManagement() {
         }
     }
 
+    const handleDeleteUrl = async (id: string) => {
+        try {
+            await fetch('/api/delete-url', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id }),
+            })
+            fetchUrls()
+            toast({
+                title: "成功",
+                description: "URL已删除",
+            })
+        } catch (error) {
+            console.error('Failed to delete URL:', error)
+            toast({
+                title: "错误",
+                description: "删除URL失败",
+                variant: "destructive",
+            })
+        }
+    }
+
+    const handleModifyUrl = async () => {
+        if (!modifyingUrl) return
+
+        try {
+            await fetch('/api/modify-url', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    id: modifyingUrl.id,
+                    url: modifyingUrl.url,
+                    description: modifyingUrl.description,
+                }),
+            })
+            setIsModifyDialogOpen(false)
+            setModifyingUrl(null)
+            fetchUrls()
+            toast({
+                title: "成功",
+                description: "URL已修改",
+            })
+        } catch (error) {
+            console.error('Failed to modify URL:', error)
+            toast({
+                title: "错误",
+                description: "修改URL失败",
+                variant: "destructive",
+            })
+        }
+    }
+
     const handleSearch = () => {
         setCurrentSearchTerm(searchTerm)
     }
@@ -205,6 +259,7 @@ export default function UrlManagement() {
                             <TableHead className="w-[100px]">是否注释</TableHead>
                             <TableHead>URL 地址</TableHead>
                             <TableHead>URL 描述</TableHead>
+                            <TableHead className="w-[200px]">操作</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -218,10 +273,55 @@ export default function UrlManagement() {
                                 </TableCell>
                                 <TableCell>{item.url}</TableCell>
                                 <TableCell>{item.description}</TableCell>
+                                <TableCell>
+                                    <div className="flex space-x-2">
+                                        <Button variant="outline" size="sm" onClick={() => {
+                                            setModifyingUrl(item)
+                                            setIsModifyDialogOpen(true)
+                                        }}>
+                                            修改
+                                        </Button>
+                                        <Button variant="destructive" size="sm" onClick={() => handleDeleteUrl(item.id)}>
+                                            删除
+                                        </Button>
+                                    </div>
+                                </TableCell>
                             </TableRow>
                         ))}
                     </TableBody>
                 </Table>
+                <Dialog open={isModifyDialogOpen} onOpenChange={setIsModifyDialogOpen}>
+                    <DialogContent>
+                        <DialogHeader>
+                            <DialogTitle>修改 URL</DialogTitle>
+                        </DialogHeader>
+                        <div className="grid gap-4 py-4">
+                            <div className="grid grid-cols-4 items-center gap-4">
+                                <Label htmlFor="modify-url" className="text-right">
+                                    URL
+                                </Label>
+                                <Input
+                                    id="modify-url"
+                                    value={modifyingUrl?.url || ''}
+                                    onChange={(e) => setModifyingUrl(prev => prev ? { ...prev, url: e.target.value } : null)}
+                                    className="col-span-3"
+                                />
+                            </div>
+                            <div className="grid grid-cols-4 items-center gap-4">
+                                <Label htmlFor="modify-description" className="text-right">
+                                    描述
+                                </Label>
+                                <Input
+                                    id="modify-description"
+                                    value={modifyingUrl?.description || ''}
+                                    onChange={(e) => setModifyingUrl(prev => prev ? { ...prev, description: e.target.value } : null)}
+                                    className="col-span-3"
+                                />
+                            </div>
+                        </div>
+                        <Button onClick={handleModifyUrl}>确定</Button>
+                    </DialogContent>
+                </Dialog>
             </div>
         </div>
     )
