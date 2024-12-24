@@ -115,6 +115,7 @@ export default function UrlManagement() {
             setNewUrl('')
             setNewDescription('')
             setSelectedUrlOption(urlOptions[0].value)
+            handleUrlOptionChange(urlOptions[0].value)
             setIsDialogOpen(false)
             fetchUrls()
         } catch (error) {
@@ -188,6 +189,10 @@ export default function UrlManagement() {
         setSelectedUrlOption(value)
         setNewUrl(value)
     }
+
+    useEffect(() => {
+        handleUrlOptionChange(selectedUrlOption);
+    }, [selectedUrlOption]);
 
     return (
         <div className="container mx-auto p-4">
