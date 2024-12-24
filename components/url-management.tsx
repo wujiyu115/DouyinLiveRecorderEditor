@@ -10,11 +10,18 @@ import { Label } from "@/components/ui/label"
 import { UrlItem } from '../types/url-item'
 import { Recording } from '../types/recording'
 import { useToast } from "@/components/ui/use-toast"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+
+const urlOptions = [
+    { label: "抖音", value: "https://live.douyin.com/" },
+    { label: "无", value: "none" }
+]
 
 export default function UrlManagement() {
     const [urls, setUrls] = useState<UrlItem[]>([])
     const [newUrl, setNewUrl] = useState('')
     const [newDescription, setNewDescription] = useState('')
+    const [selectedUrlOption, setSelectedUrlOption] = useState(urlOptions[0].value)
     const [isDialogOpen, setIsDialogOpen] = useState(false)
     const [isModifyDialogOpen, setIsModifyDialogOpen] = useState(false)
     const [modifyingUrl, setModifyingUrl] = useState<UrlItem | null>(null)
@@ -107,6 +114,7 @@ export default function UrlManagement() {
             })
             setNewUrl('')
             setNewDescription('')
+            setSelectedUrlOption(urlOptions[0].value)
             setIsDialogOpen(false)
             fetchUrls()
         } catch (error) {
@@ -176,6 +184,11 @@ export default function UrlManagement() {
         }
     };
 
+    const handleUrlOptionChange = (value: string) => {
+        setSelectedUrlOption(value)
+        setNewUrl(value)
+    }
+
     return (
         <div className="container mx-auto p-4">
             <div className="flex justify-between items-center mb-4">
@@ -199,6 +212,26 @@ export default function UrlManagement() {
                                 <DialogTitle>添加新的 URL</DialogTitle>
                             </DialogHeader>
                             <div className="grid gap-4 py-4">
+                                <div className="grid grid-cols-4 items-center gap-4">
+                                    <Label htmlFor="url-option" className="text-right">
+                                        URL 选项
+                                    </Label>
+                                    <Select
+                                        value={selectedUrlOption}
+                                        onValueChange={handleUrlOptionChange}
+                                    >
+                                        <SelectTrigger className="col-span-3">
+                                            <SelectValue placeholder="选择 URL 选项" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {urlOptions.map((option) => (
+                                                <SelectItem key={option.value} value={option.value}>
+                                                    {option.label}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                </div>
                                 <div className="grid grid-cols-4 items-center gap-4">
                                     <Label htmlFor="url" className="text-right">
                                         URL
