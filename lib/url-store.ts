@@ -88,6 +88,20 @@ export function updateUrl(id: string, isCommented: boolean): UrlItem | undefined
     return undefined;
 }
 
+export function updateByUrl(record_url: string, isCommented: boolean): UrlItem | undefined {
+    const configLines = readConfigFile();
+    for (let i = 0; i < configLines.length; i++) {
+        const line = configLines[i];
+        const [url] = line.split(',', 2);
+        if (url.trim() === record_url) {
+            configLines[i] = isCommented ? `#${line.replace(/^#/, '')}` : line.replace(/^#/, '');
+            saveConfigFile(configLines);
+            return parseConfig(configLines)[i];
+        }
+    }
+    return undefined;
+}
+
 export function addUrl(url: string, description: string): UrlItem {
     const configLines = readConfigFile();
     const newEntry = description ? `${url}, ${description}` : url;

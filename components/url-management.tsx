@@ -63,6 +63,43 @@ export default function UrlManagement() {
         return () => clearInterval(interval)
     }, [currentSearchTerm])
 
+    const handleCommentByUrlChange = async (record_url: string, isCommented: boolean) => {
+        try {
+            const response = await fetch('/api/comment-byurl', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ record_url, isCommented }),
+            })
+
+            if (!response.ok) {
+                toast({
+                    title: 'update failed',
+                    description: 'update failed',
+                    variant: 'destructive',
+                })
+                return
+            }
+
+            const data = await response.json()
+
+            if (data.code !== 0) {
+                toast({
+                    title: 'update failed',
+                    description: 'update failed',
+                    variant: 'destructive',
+                })
+                return
+            }
+            console.log('注释成功:')
+            toast({
+                title: "成功",
+                description: "注释成功",
+            })
+            fetchUrls()
+        } catch (error) {
+            console.error('Failed to update comment status:', error)
+        }
+    }
     const handleCommentChange = async (id: string, isCommented: boolean) => {
         try {
             const response = await fetch('/api/comment-url', {
@@ -90,10 +127,10 @@ export default function UrlManagement() {
                 })
                 return
             }
-            console.log('comment successfully:')
+            console.log('成功:')
             toast({
-                title: "Success",
-                description: "comment successfully",
+                title: "成功",
+                description: "注释成功",
             })
             fetchUrls()
         } catch (error) {
@@ -273,6 +310,7 @@ export default function UrlManagement() {
                 <Table>
                     <TableHeader>
                         <TableRow>
+                            <TableHead className="w-[100px]">是否注释</TableHead>
                             <TableHead>直播间</TableHead>
                             <TableHead>画质</TableHead>
                             <TableHead>时长</TableHead>
@@ -281,6 +319,11 @@ export default function UrlManagement() {
                     <TableBody>
                         {recordings.map((recording, index) => (
                             <TableRow key={index}>
+                                <TableCell>
+                                    <Checkbox
+                                        onCheckedChange={(checked) => handleCommentByUrlChange(recording.record_url, checked as boolean)}
+                                    />
+                                </TableCell>
                                 <TableCell>{recording.stream}</TableCell>
                                 <TableCell>{recording.quality_attribute}</TableCell>
                                 <TableCell>{recording.duration}</TableCell>
