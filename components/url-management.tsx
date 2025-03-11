@@ -321,6 +321,7 @@ export default function UrlManagement() {
                             <TableRow key={index}>
                                 <TableCell>
                                     <Checkbox
+                                        checked={recording.isCommented}
                                         onCheckedChange={(checked) => handleCommentByUrlChange(recording.record_url, checked as boolean)}
                                     />
                                 </TableCell>
