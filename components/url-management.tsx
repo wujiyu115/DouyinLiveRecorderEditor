@@ -317,8 +317,8 @@ export default function UrlManagement() {
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        {recordings.map((recording, index) => (
-                            <TableRow key={index}>
+                        {recordings.map((recording) => (
+                            <TableRow key={recording.record_url}>
                                 <TableCell>
                                     <Checkbox
                                         checked={recording.isCommented}

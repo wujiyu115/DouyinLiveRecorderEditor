@@ -3,5 +3,5 @@ export interface Recording {
     quality_attribute: string;
     stream: string;
     record_url: string;
-    isCommented?: boolean; 
+    isCommented: boolean;
 }
